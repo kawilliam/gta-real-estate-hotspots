@@ -121,67 +121,96 @@ class FSAAggregator:
         
     def aggregate_building_permits(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Aggregate building permits to FSA level.
+        Aggregate building permits to FSA level using postal codes.
         
         Args:
-            df: Building permits DataFrame with lat/lon coordinates
+            df: Building permits DataFrame with POSTAL column
             
         Returns:
             Aggregated DataFrame with permit counts and values by FSA
         """
         logger.info("Aggregating building permits to FSA level...")
-
-        if 'LATITUDE' not in df.columns or 'LONGITUDE' not in df.columns:
-            logger.error("Latitude/Longitude columns not found in permits data")
+        
+        # Check for postal code column
+        if 'POSTAL' not in df.columns:
+            logger.error("POSTAL column not found in permits data")
+            logger.error(f"Available columns: {list(df.columns)[:20]}")
             return pd.DataFrame()
-
-        df_valid = df[
-            (df['LATITUDE'].notna()) & 
-            (df['LONGITUDE'].notna()) &
-            (df['LATITUDE'] > 43.5) & 
-            (df['LATITUDE'] < 44.0) &
-            (df['LONGITUDE'] > -79.8) & 
-            (df['LONGITUDE'] < -79.0)
-        ].copy()
         
-        logger.info(f"Filtered to {len(df_valid):,} permits with valid GTA coordinates")
-
-        gdf = gpd.GeoDataFrame(
-            df_valid,
-            geometry=gpd.points_from_xy(df_valid['LONGITUDE'], df_valid['LATITUDE']),
-            crs='EPSG:4326'
-        )
-
-        logger.warning("Using simplified FSA assignment. Consider adding geocoding service.")
-  
-        gdf['FSA_TEMP'] = (
-            gdf['LATITUDE'].round(2).astype(str) + '_' + 
-            gdf['LONGITUDE'].round(2).astype(str)
-        )
-
-        agg_dict = {
-            'LATITUDE': 'mean',  
-            'LONGITUDE': 'mean'
-        }
-
-        if 'Year' in gdf.columns:
-            group_cols = ['FSA_TEMP', 'Year']
-        else:
-            group_cols = ['FSA_TEMP']
-
-        agg_dict['PERMIT_TYPE'] = 'count'
-
-        if 'ESTIMATED_VALUE' in gdf.columns:
-            gdf['ESTIMATED_VALUE_NUM'] = pd.to_numeric(gdf['ESTIMATED_VALUE'], errors='coerce')
-            agg_dict['ESTIMATED_VALUE_NUM'] = 'sum'
-
-        df_agg = gdf.groupby(group_cols).agg(agg_dict).reset_index()
-        df_agg.columns = ['FSA_TEMP', 'Year', 'Centroid_Lat', 'Centroid_Lon', 
-                          'Permit_Count', 'Total_Construction_Value'] if 'Year' in group_cols else [
-                          'FSA_TEMP', 'Centroid_Lat', 'Centroid_Lon', 
-                          'Permit_Count', 'Total_Construction_Value']
+        logger.info(f"Using POSTAL column for FSA extraction")
         
-        logger.info(f"Aggregated to {len(df_agg)} spatial units")
+        # Extract FSA from postal code (first 3 characters)
+        df['FSA'] = df['POSTAL'].astype(str).str[:3].str.upper()
+        
+        # Remove invalid FSAs (NaN, too short, etc.)
+        df = df[df['FSA'].str.len() == 3].copy()
+        
+        logger.info(f"Extracted {df['FSA'].nunique()} unique FSAs from postal codes")
+        
+        # Add year if date columns exist
+        date_cols = [col for col in df.columns if 'DATE' in col.upper()]
+        if date_cols:
+            for col in date_cols:
+                try:
+                    df[col] = pd.to_datetime(df[col], errors='coerce')
+                    if df[col].notna().any():
+                        df['Year'] = df[col].dt.year
+                        logger.info(f"Extracted year from {col}")
+                        break
+                except:
+                    pass
+        
+        # Prepare aggregation
+        group_cols = ['FSA']
+        if 'Year' in df.columns:
+            group_cols.append('Year')
+        
+        agg_dict = {}
+        
+        # Count permits
+        agg_dict['PERMIT_NUM'] = 'count'
+        
+        # Sum estimated cost if available
+        if 'EST_CONST_COST' in df.columns:
+            df['EST_CONST_COST_NUM'] = pd.to_numeric(df['EST_CONST_COST'], errors='coerce')
+            agg_dict['EST_CONST_COST_NUM'] = 'sum'
+        
+        # Aggregate
+        df_agg = df.groupby(group_cols).agg(agg_dict).reset_index()
+        
+        # Rename columns
+        df_agg.columns = list(group_cols) + ['Permit_Count', 'Total_Construction_Value'][:len(agg_dict)]
+        
+        # For network building, we need approximate coordinates
+        # Use FSA centroids (we'll calculate from first 3 chars of postal code)
+        # This is a simplified approach - in production use proper geocoding
+        
+        # Create pseudo-coordinates based on FSA
+        # Toronto FSAs range roughly: M1A-M9W
+        # We'll create a simple mapping
+        fsa_coords = {}
+        for fsa in df_agg['FSA'].unique():
+            if fsa.startswith('M'):
+                # Extract the number and letter
+                try:
+                    num = int(fsa[1])
+                    letter_ord = ord(fsa[2]) - ord('A')
+                    
+                    # Map to approximate Toronto coordinates
+                    # This is a rough approximation
+                    lat = 43.65 + (num - 5) * 0.05  # Spread N-S
+                    lon = -79.40 + letter_ord * 0.02  # Spread E-W
+                    
+                    fsa_coords[fsa] = (lat, lon)
+                except:
+                    # Default to downtown Toronto
+                    fsa_coords[fsa] = (43.65, -79.38)
+        
+        # Add coordinates to aggregated data
+        df_agg['Centroid_Lat'] = df_agg['FSA'].map(lambda x: fsa_coords.get(x, (43.65, -79.38))[0])
+        df_agg['Centroid_Lon'] = df_agg['FSA'].map(lambda x: fsa_coords.get(x, (43.65, -79.38))[1])
+        
+        logger.info(f"Aggregated to {len(df_agg)} FSA-level records")
         
         return df_agg
     
@@ -611,7 +640,9 @@ class SpatialNetworkBuilder:
         logger.info(f"Saving graph to: {output_path}")
         
         if format == 'gpickle':
-            nx.write_gpickle(self.graph, output_path)
+            import pickle
+            with open(output_path, 'wb') as f:
+                pickle.dump(self.graph, f)
         elif format == 'graphml':
             nx.write_graphml(self.graph, output_path)
         elif format == 'gexf':
@@ -641,7 +672,9 @@ class SpatialNetworkBuilder:
         logger.info(f"Loading graph from: {input_path}")
         
         if format == 'gpickle':
-            G = nx.read_gpickle(input_path)
+            import pickle
+            with open(input_path, 'rb') as f:
+                G = pickle.load(f)
         elif format == 'graphml':
             G = nx.read_graphml(input_path)
         elif format == 'gexf':
@@ -752,8 +785,20 @@ def build_network_pipeline(edge_method: str = 'distance',
     metrics_file.parent.mkdir(parents=True, exist_ok=True)
     
     import json
+    def convert_to_native(obj):
+        if hasattr(obj, 'item'):
+            return obj.item()
+        elif isinstance(obj, dict):
+            return {k: convert_to_native(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_to_native(item) for item in obj]
+        else:
+            return obj
+
+    metrics_native = convert_to_native(metrics)
+
     with open(metrics_file, 'w') as f:
-        json.dump(metrics, f, indent=2)
+        json.dump(metrics_native, f, indent=2)
     logger.info(f"Saved network metrics to: {metrics_file}")
    
     logger.info("\nAdding spatial lag features...")
@@ -764,15 +809,17 @@ def build_network_pipeline(edge_method: str = 'distance',
         builder.add_spatial_lag_features(feature_cols[:5])
         logger.info(f"Added spatial lags for: {feature_cols[:5]}")
 
+    # Save graph
     logger.info("\nSaving network graph...")
     graph_filename = f"spatial_network_{edge_method}"
     if year:
         graph_filename += f"_{year}"
     graph_filename += ".gpickle"
-    
+
     builder.save_graph(graph_filename, format='gpickle')
 
-    builder.save_graph(graph_filename.replace('.gpickle', '.graphml'), format='graphml')
+    # Skip GraphML - causes issues with tuple attributes
+    logger.info("Skipping GraphML export (use gpickle for Python, or export nodes/edges separately for other tools)")
     
     logger.info("\n" + "=" * 60)
     logger.info("NETWORK CONSTRUCTION COMPLETE")

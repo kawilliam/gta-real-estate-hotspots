@@ -210,7 +210,7 @@ class TorontoOpenDataCollector:
             
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        package_id = "wellbeing-toronto-housing"
+        package_id = "neighbourhood-profiles"
 
         try:
             metadata = self.get_dataset_metadata(package_id)
@@ -320,7 +320,8 @@ class OpenStreetMapCollector:
             import osmnx as ox
             self.ox = ox
 
-            ox.config(log_console=True, use_cache=True)
+            ox.settings.log_console = True
+            ox.settings.use_cache = True
         except ImportError:
             logger.error("OSMnx not installed. Install with: pip install osmnx")
             raise
