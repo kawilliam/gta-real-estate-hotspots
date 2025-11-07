@@ -1,0 +1,15 @@
+{
+  "num_nodes": 99,
+  "num_edges": 165,
+  "density": 0.034013605442176874,
+  "avg_degree": 3.3333333333333335,
+  "max_degree": 5,
+  "min_degree": 0,
+  "is_connected": false,
+  "num_components": 12,
+  "diameter_largest_component": 9,
+  "avg_shortest_path_length_largest": 3.56140350877193,
+  "avg_clustering_coefficient": 0.6528619528619528,
+  "avg_degree_centrality": 0.03401360544217687,
+  "avg_betweenness_centrality": 0.0026501072156447708
+}
