@@ -1,0 +1,89 @@
+{
+  "naive_baseline": {
+    "model_type": "Naive Persistence",
+    "description": "Predict \u0394y(t+1) = \u0394y(t)",
+    "validation": {
+      "rmse": 94.34586825687099,
+      "mae": 59.97959183673469,
+      "r2": -0.7892843549187352,
+      "n_samples": 98
+    },
+    "test": {
+      "rmse": 101.27815809009586,
+      "mae": 66.6734693877551,
+      "r2": -2.2520774622837423,
+      "n_samples": 98
+    }
+  },
+  "lasso_regression": {
+    "model_type": "LASSO Regression",
+    "description": "Linear regression with L1 regularization",
+    "alpha": 2.1209508879201904,
+    "n_features_selected": 10,
+    "n_features_total": 17,
+    "selected_features": [
+      {
+        "feature": "Permit_Growth_1yr",
+        "coefficient": -25.25381433000737,
+        "abs_coefficient": 25.25381433000737
+      },
+      {
+        "feature": "Permit_Count",
+        "coefficient": -22.360771184378162,
+        "abs_coefficient": 22.360771184378162
+      },
+      {
+        "feature": "Construction_Value_Lag1",
+        "coefficient": -7.999388548322543,
+        "abs_coefficient": 7.999388548322543
+      },
+      {
+        "feature": "Year_Numeric",
+        "coefficient": 6.36534317818832,
+        "abs_coefficient": 6.36534317818832
+      },
+      {
+        "feature": "Total_Construction_Value",
+        "coefficient": -5.458267066459918,
+        "abs_coefficient": 5.458267066459918
+      },
+      {
+        "feature": "Permit_Count_Rolling_Std",
+        "coefficient": 3.5852307793612814,
+        "abs_coefficient": 3.5852307793612814
+      },
+      {
+        "feature": "Spatial_Lag_Permits",
+        "coefficient": 3.258844178827291,
+        "abs_coefficient": 3.258844178827291
+      },
+      {
+        "feature": "Centroid_Lat",
+        "coefficient": 1.4941478036286426,
+        "abs_coefficient": 1.4941478036286426
+      },
+      {
+        "feature": "Spatial_Lag_Value",
+        "coefficient": -0.5942122255652313,
+        "abs_coefficient": 0.5942122255652313
+      },
+      {
+        "feature": "Permit_Growth_2yr",
+        "coefficient": -0.4860773586491315,
+        "abs_coefficient": 0.4860773586491315
+      }
+    ],
+    "validation": {
+      "rmse": 72.91972366018217,
+      "mae": 53.398291141926826,
+      "r2": -0.06886688368960003,
+      "n_samples": 98
+    },
+    "test": {
+      "rmse": 56.32475267197859,
+      "mae": 41.190580290222165,
+      "r2": -0.005837630845931363,
+      "n_samples": 98
+    }
+  }
+}

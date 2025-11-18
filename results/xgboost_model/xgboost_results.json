@@ -1,0 +1,25 @@
+{
+  "xgboost": {
+    "model_type": "XGBoost Gradient Boosting",
+    "description": "Gradient boosted decision trees",
+    "best_params": {
+      "colsample_bytree": 0.8,
+      "learning_rate": 0.05,
+      "max_depth": 4,
+      "n_estimators": 100,
+      "subsample": 0.8
+    },
+    "validation": {
+      "rmse": 70.38042279213303,
+      "mae": 49.834832210930024,
+      "r2": 0.004279757521562733,
+      "n_samples": 98
+    },
+    "test": {
+      "rmse": 57.21674418539169,
+      "mae": 41.64652739556468,
+      "r2": -0.037947950629806604,
+      "n_samples": 98
+    }
+  }
+}

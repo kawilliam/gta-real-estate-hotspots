@@ -1,0 +1,56 @@
+{
+  "k_10": {
+    "naive": {
+      "precision": 0.5,
+      "hits": 5,
+      "total": 10
+    },
+    "lasso": {
+      "precision": 0.6,
+      "hits": 6,
+      "total": 10
+    },
+    "xgboost": {
+      "precision": 0.6,
+      "hits": 6,
+      "total": 10
+    },
+    "ols": {
+      "precision": 0.6,
+      "hits": 6,
+      "total": 10
+    },
+    "sar": {
+      "precision": 0.3,
+      "hits": 3,
+      "total": 10
+    }
+  },
+  "k_20": {
+    "naive": {
+      "precision": 0.35,
+      "hits": 7,
+      "total": 20
+    },
+    "lasso": {
+      "precision": 0.65,
+      "hits": 13,
+      "total": 20
+    },
+    "xgboost": {
+      "precision": 0.65,
+      "hits": 13,
+      "total": 20
+    },
+    "ols": {
+      "precision": 0.5,
+      "hits": 10,
+      "total": 20
+    },
+    "sar": {
+      "precision": 0.6,
+      "hits": 12,
+      "total": 20
+    }
+  }
+}

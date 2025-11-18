@@ -1,0 +1,49 @@
+{
+  "ols": {
+    "model_type": "OLS (Non-Spatial)",
+    "description": "Ordinary Least Squares without spatial lag",
+    "train": {
+      "rmse": 62.45962364553719,
+      "mae": 45.822969220991695,
+      "r2": 0.30900588026783327,
+      "n_samples": 392
+    },
+    "validation": {
+      "rmse": 76.51290092383542,
+      "mae": 57.97010629948908,
+      "r2": -0.1768007317067002,
+      "n_samples": 98
+    },
+    "test": {
+      "rmse": 61.96436360717506,
+      "mae": 46.78722140790071,
+      "r2": -0.21734389000511856,
+      "n_samples": 98
+    }
+  },
+  "sar": {
+    "model_type": "SAR (Spatial Lag)",
+    "description": "Spatial Autoregressive Model with spatial dependency",
+    "rho": 0.2064190938802433,
+    "rho_pvalue": 0.036628638352985465,
+    "rho_significant": true,
+    "train": {
+      "rmse": 60.81721025519338,
+      "mae": 44.69307855740484,
+      "r2": 0.34486829879244263,
+      "n_samples": 392
+    },
+    "validation": {
+      "rmse": 70.15675771462162,
+      "mae": 52.42946409887982,
+      "r2": 0.010598388749011867,
+      "n_samples": 98
+    },
+    "test": {
+      "rmse": 56.00870246544566,
+      "mae": 41.028778505741734,
+      "r2": 0.005418638806492293,
+      "n_samples": 98
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "naive_comparisons": [
+    {
+      "model": "LASSO Regression",
+      "type": "Non-Spatial",
+      "rmse": 56.32475267197859,
+      "improvement_vs_naive": 44.38608113126154,
+      "significant": true
+    },
+    {
+      "model": "XGBoost",
+      "type": "Non-Spatial",
+      "rmse": 57.21674418539169,
+      "improvement_vs_naive": 43.50534679501937,
+      "significant": true
+    },
+    {
+      "model": "OLS (Non-Spatial)",
+      "type": "Non-Spatial",
+      "rmse": 61.96436360717506,
+      "improvement_vs_naive": 38.81764363047333,
+      "significant": true
+    },
+    {
+      "model": "SAR (\u03c1=0.206)",
+      "type": "Spatial",
+      "rmse": 56.00870246544566,
+      "improvement_vs_naive": 44.69814269763775,
+      "significant": true
+    }
+  ],
+  "spatial_vs_nonspatial": {
+    "spatial_avg_rmse": 56.00870246544566,
+    "nonspatial_avg_rmse": 58.501953488181776,
+    "spatial_advantage_pct": 4.261825245271151
+  },
+  "ablation": {
+    "feature_groups": {
+      "Temporal": [
+        "Year_Numeric",
+        "Permit_Growth_1yr",
+        "Permit_Growth_2yr"
+      ],
+      "Historical": [
+        "Permit_Count_Lag1",
+        "Permit_Count_Lag2",
+        "Construction_Value_Lag1"
+      ],
+      "Spatial": [
+        "Spatial_Lag_Permits",
+        "Spatial_Lag_Value",
+        "Network_Degree"
+      ],
+      "Geographic": [
+        "Centroid_Lat",
+        "Centroid_Lon",
+        "Distance_To_Downtown_km"
+      ],
+      "Current": [
+        "Permit_Count",
+        "Total_Construction_Value",
+        "Value_Per_Permit"
+      ],
+      "Rolling": [
+        "Permit_Count_Rolling_Mean",
+        "Permit_Count_Rolling_Std"
+      ]
+    },
+    "group_importance": {
+      "Temporal": {
+        "rank": 1,
+        "reasoning": "Year_Numeric top in XGBoost, strong in LASSO",
+        "models_support": [
+          "LASSO",
+          "XGBoost",
+          "SAR"
+        ]
+      },
+      "Historical": {
+        "rank": 2,
+        "reasoning": "Permit_Growth_1yr strongest LASSO predictor",
+        "models_support": [
+          "LASSO",
+          "XGBoost"
+        ]
+      },
+      "Spatial": {
+        "rank": 3,
+        "reasoning": "SAR coefficient significant (\u03c1=0.206, p=0.039)",
+        "models_support": [
+          "SAR"
+        ]
+      },
+      "Geographic": {
+        "rank": 4,
+        "reasoning": "Centroid_Lat significant in SAR (p=0.001)",
+        "models_support": [
+          "SAR",
+          "LASSO"
+        ]
+      },
+      "Current": {
+        "rank": 5,
+        "reasoning": "Permit_Count important across models",
+        "models_support": [
+          "LASSO",
+          "XGBoost"
+        ]
+      },
+      "Rolling": {
+        "rank": 6,
+        "reasoning": "Rolling statistics provide smoothing",
+        "models_support": [
+          "XGBoost"
+        ]
+      }
+    }
+  }
+}
