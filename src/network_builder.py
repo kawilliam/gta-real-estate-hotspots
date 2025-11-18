@@ -8,7 +8,7 @@ This module handles the construction of spatial networks for GTA real estate ana
 - Calculate network properties and metrics
 
 Author: Yadon Kassahun (Network Architect)
-Date: 2024-11-06
+Date: 2025-11-06
 """
 
 import os
