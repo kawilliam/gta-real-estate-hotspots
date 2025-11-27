@@ -1,0 +1,51 @@
+{
+  "ablation_study": [
+    {
+      "config": "Baseline (no network)",
+      "num_features": 16,
+      "rmse": 56.32322001475951,
+      "mae": 41.18905127235734,
+      "r2": -0.005782891738925988
+    },
+    {
+      "config": "With Network Centrality",
+      "num_features": 23,
+      "rmse": 56.334802779850385,
+      "mae": 41.18728789187716,
+      "r2": -0.006196609024221589
+    },
+    {
+      "config": "With Network Structure",
+      "num_features": 19,
+      "rmse": 56.32322001475951,
+      "mae": 41.18905127235734,
+      "r2": -0.005782891738925988
+    },
+    {
+      "config": "With All Network Features",
+      "num_features": 26,
+      "rmse": 56.334802779850385,
+      "mae": 41.18728789187716,
+      "r2": -0.006196609024221589
+    },
+    {
+      "config": "Network Features Only",
+      "num_features": 10,
+      "rmse": 56.64942309587799,
+      "mae": 40.07697046128642,
+      "r2": -0.01746686733810643
+    }
+  ],
+  "network_feature_coefficients": {
+    "Network_Degree": -0.0,
+    "Degree_Centrality": -0.0,
+    "Betweenness_Centrality": 0.23480553741572358,
+    "Closeness_Centrality": 0.0,
+    "Eigenvector_Centrality": 0.0,
+    "PageRank": -0.0,
+    "Clustering_Coefficient": -0.0,
+    "Community": -0.0,
+    "Is_Hub": 0.0,
+    "Path_To_Downtown": 0.0
+  }
+}

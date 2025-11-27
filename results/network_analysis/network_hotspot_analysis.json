@@ -1,0 +1,30 @@
+{
+  "correlations": {
+    "Degree_Centrality": -0.04679466071361862,
+    "Betweenness_Centrality": -0.018834521462970818,
+    "Closeness_Centrality": -0.048984523435448235,
+    "Eigenvector_Centrality": NaN,
+    "PageRank": -0.045492789345800366,
+    "Clustering_Coefficient": -0.019066799431722126
+  },
+  "correlation_p_values": {
+    "Degree_Centrality": 0.3554683067594788,
+    "Betweenness_Centrality": 0.7100815101378251,
+    "Closeness_Centrality": 0.3333802292260869,
+    "Eigenvector_Centrality": NaN,
+    "PageRank": 0.36902560866843415,
+    "Clustering_Coefficient": 0.7066700632702274
+  },
+  "hub_vs_periphery": {
+    "hub_mean": -27.58,
+    "periphery_mean": -25.166666666666668,
+    "t_statistic": -0.31711950795256305,
+    "p_value": 0.7513226167352139,
+    "significant": false
+  },
+  "community_anova": {
+    "f_statistic": 0.4872409854092128,
+    "p_value": 0.9315342556151965,
+    "significant": false
+  }
+}

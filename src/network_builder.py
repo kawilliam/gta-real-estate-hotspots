@@ -622,7 +622,54 @@ class SpatialNetworkBuilder:
                     G.nodes[node][f'{col}_spatial_lag'] = None
             
             logger.info(f"Added spatial lag for '{col}'")
-    
+
+    def calculate_centrality_measures(self):
+        """
+        Calculate comprehensive network centrality measures for all nodes.
+        These quantify the importance/position of each FSA in the spatial network.
+        """
+        logger.info("Calculating network centrality measures...")
+        
+        # 1. Degree Centrality (normalize to 0-1)
+        degree_cent = nx.degree_centrality(self.graph)
+        
+        # 2. Betweenness Centrality (bridge/connector importance)
+        betweenness_cent = nx.betweenness_centrality(self.graph, normalized=True)
+        
+        # 3. Closeness Centrality (accessibility to all nodes)
+        closeness_cent = nx.closeness_centrality(self.graph)
+        
+        # 4. Eigenvector Centrality (importance based on neighbor importance)
+        try:
+            eigenvector_cent = nx.eigenvector_centrality(self.graph, max_iter=1000)
+        except:
+            logger.warning("Eigenvector centrality failed (disconnected graph?), using zeros")
+            eigenvector_cent = {node: 0.0 for node in self.graph.nodes()}
+        
+        # 5. PageRank (influence with damping)
+        pagerank = nx.pagerank(self.graph, alpha=0.85)
+        
+        # 6. Clustering Coefficient (local connectivity density)
+        clustering = nx.clustering(self.graph)
+        
+        # Add to node attributes
+        for node in self.graph.nodes():
+            self.graph.nodes[node]['degree_centrality'] = degree_cent.get(node, 0)
+            self.graph.nodes[node]['betweenness_centrality'] = betweenness_cent.get(node, 0)
+            self.graph.nodes[node]['closeness_centrality'] = closeness_cent.get(node, 0)
+            self.graph.nodes[node]['eigenvector_centrality'] = eigenvector_cent.get(node, 0)
+            self.graph.nodes[node]['pagerank'] = pagerank.get(node, 0)
+            self.graph.nodes[node]['clustering_coefficient'] = clustering.get(node, 0)
+        
+        logger.info("✓ Calculated 6 centrality measures for all nodes")
+        
+        # Log summary statistics
+        logger.info(f"  Degree centrality range: {min(degree_cent.values()):.3f} - {max(degree_cent.values()):.3f}")
+        logger.info(f"  Betweenness centrality range: {min(betweenness_cent.values()):.3f} - {max(betweenness_cent.values()):.3f}")
+        logger.info(f"  PageRank range: {min(pagerank.values()):.4f} - {max(pagerank.values()):.4f}")
+        
+        return self
+        
     def save_graph(self, filename: str, format: str = 'gpickle') -> None:
         """
         Save graph to file.
@@ -780,6 +827,7 @@ def build_network_pipeline(edge_method: str = 'distance',
   
     logger.info("\n[Step 5/5] Calculating network metrics...")
     metrics = builder.calculate_network_metrics()
+    builder.calculate_centrality_measures()
   
     metrics_file = RESULTS / "tables" / "network_metrics.json"
     metrics_file.parent.mkdir(parents=True, exist_ok=True)

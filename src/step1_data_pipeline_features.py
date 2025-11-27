@@ -235,36 +235,57 @@ class GTA_HotspotsDataPipeline:
             calc_distance_to_downtown, axis=1
         )
         
-        # Extract spatial lag features from network (if available)
-        # Note: Network has these as node attributes, we need to join them
-        spatial_lag_dict = {}
+        # Extract ALL network features from graph
+        network_features_dict = {}
         for node in self.network.nodes():
             if node.strip():  # Skip empty FSA codes
                 node_data = self.network.nodes[node]
-                if 'Permit_Count_spatial_lag' in node_data:
-                    spatial_lag_dict[node] = {
-                        'Spatial_Lag_Permits': node_data['Permit_Count_spatial_lag'],
-                        'Spatial_Lag_Value': node_data.get(
-                            'Total_Construction_Value_spatial_lag', np.nan
-                        )
-                    }
+                network_features_dict[node] = {
+                    # Spatial lag features (existing)
+                    'Spatial_Lag_Permits': node_data.get('Permit_Count_spatial_lag', np.nan),
+                    'Spatial_Lag_Value': node_data.get('Total_Construction_Value_spatial_lag', np.nan),
+                    
+                    # Network centrality features (NEW - Phase 1)
+                    'Degree_Centrality': node_data.get('degree_centrality', np.nan),
+                    'Betweenness_Centrality': node_data.get('betweenness_centrality', np.nan),
+                    'Closeness_Centrality': node_data.get('closeness_centrality', np.nan),
+                    'Eigenvector_Centrality': node_data.get('eigenvector_centrality', np.nan),
+                    'PageRank': node_data.get('pagerank', np.nan),
+                    'Clustering_Coefficient': node_data.get('clustering_coefficient', np.nan),
+
+                    'Community': node_data.get('community', -1),
+                    'Is_Hub': node_data.get('is_hub', 0),
+                    'Path_To_Downtown': node_data.get('path_to_downtown', 999),
+                    
+                    # Basic degree (for backward compatibility)
+                    'Network_Degree': self.network.degree(node)
+                }
         
-        # Join spatial lag features
-        spatial_lag_df = pd.DataFrame.from_dict(spatial_lag_dict, orient='index')
-        spatial_lag_df.index.name = 'FSA'
-        spatial_lag_df = spatial_lag_df.reset_index()
+        # Join all network features to main dataframe
+        network_features_df = pd.DataFrame.from_dict(network_features_dict, orient='index')
+        network_features_df.index.name = 'FSA'
+        network_features_df = network_features_df.reset_index()
         
-        self.df = self.df.merge(spatial_lag_df, on='FSA', how='left')
-        
-        # Calculate node degree (connectivity) from network
-        degree_dict = dict(self.network.degree())
-        self.df['Network_Degree'] = self.df['FSA'].map(degree_dict)
+        self.df = self.df.merge(network_features_df, on='FSA', how='left')
         
         logger.info("Created spatial features:")
-        logger.info("  - Distance_To_Downtown_km")
-        logger.info("  - Spatial_Lag_Permits (from network)")
-        logger.info("  - Spatial_Lag_Value (from network)")
-        logger.info("  - Network_Degree (connectivity)")
+        logger.info("  Geographic:")
+        logger.info("    - Distance_To_Downtown_km")
+        logger.info("  Network Centrality (Phase 1):")
+        logger.info("    - Network_Degree (basic connectivity)")
+        logger.info("    - Degree_Centrality (normalized connectivity)")
+        logger.info("    - Betweenness_Centrality (bridge/connector importance)")
+        logger.info("    - Closeness_Centrality (accessibility to all nodes)")
+        logger.info("    - Eigenvector_Centrality (connected to important nodes)")
+        logger.info("    - PageRank (influence score)")
+        logger.info("    - Clustering_Coefficient (local density)")
+        logger.info("  Network Structure (Phase 2):")
+        logger.info("    - Community (community detection)")
+        logger.info("    - Is_Hub (hub vs periphery classification)")
+        logger.info("    - Path_To_Downtown (shortest path in network hops)")
+        logger.info("  Spatial Dependencies:")
+        logger.info("    - Spatial_Lag_Permits (weighted neighbor average)")
+        logger.info("    - Spatial_Lag_Value (weighted neighbor average)")
         
         return self
     
@@ -430,7 +451,7 @@ def main():
     
     # Configure paths - UPDATE THESE to your actual paths
     PERMITS_PATH = "data/processed/fsa_aggregated/building_permits_fsa.csv"
-    NETWORK_PATH = "data/processed/networks/spatial_network_distance.gpickle"
+    NETWORK_PATH = "data/processed/networks/spatial_network_enriched.gpickle"
     OUTPUT_DIR = "data/processed"
     
     logger.info("="*60)

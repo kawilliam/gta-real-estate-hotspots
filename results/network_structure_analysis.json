@@ -1,0 +1,24 @@
+{
+  "num_communities": 14,
+  "community_sizes": {
+    "12": 16,
+    "1": 11,
+    "3": 6,
+    "5": 8,
+    "6": 3,
+    "8": 6,
+    "10": 11,
+    "11": 8,
+    "0": 14,
+    "2": 1,
+    "4": 5,
+    "7": 3,
+    "9": 5,
+    "13": 2
+  },
+  "num_hubs": 51,
+  "num_periphery": 48,
+  "role_distribution": {
+    "peripheral": 99
+  }
+}
